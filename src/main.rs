@@ -8,7 +8,7 @@ use ratatui::{
     layout::{Constraint, Direction, Layout},
     style::{Color, Style},
     text::{Line, Span},
-    widgets::{Block, Borders, List, ListItem, Paragraph},
+    widgets::{Block, Borders, List, ListItem, Paragraph, Clear},
     Frame, Terminal,
 };
 use std::{error::Error, io};
@@ -85,6 +85,14 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> io::Result<
     }
 }
 
+fn format_number(val: f64) -> String {
+    if val.abs() >= 1e10 || (val != 0.0 && val.abs() < 1e-4) {
+        format!("{:.6e}", val)
+    } else {
+        format!("{}", val)
+    }
+}
+
 fn ui(f: &mut Frame, app: &App) {
     let main_chunks = Layout::default()
         .direction(Direction::Horizontal)
@@ -111,7 +119,7 @@ fn ui(f: &mut Frame, app: &App) {
         .iter()
         .enumerate()
         .map(|(i, &val)| {
-            ListItem::new(Line::from(Span::raw(format!("{}: {}", i, val))))
+            ListItem::new(Line::from(Span::raw(format!("{}: {}", i, format_number(val)))))
         })
         .collect();
 
@@ -161,6 +169,9 @@ fn ui(f: &mut Frame, app: &App) {
             "  sqrt, cbrt, abs, root",
             "  inv (1/x), ! (factorial)",
             "",
+            "Constants:",
+            "  pi, e",
+            "",
             "Stack Operations:",
             "  swap, drop, clear/clr, undo",
             "",
@@ -195,6 +206,11 @@ fn ui(f: &mut Frame, app: &App) {
             ])
             .split(popup_area)[1];
 
+        // Clear background behind the modal
+        let clear_bg = Block::default().style(Style::default().bg(Color::Blue));
+        f.render_widget(clear_bg, popup_area);
+        
+        f.render_widget(Clear, popup_area);
         f.render_widget(help_paragraph, popup_area);
     }
 }

@@ -1,3 +1,11 @@
+fn format_number(val: f64) -> String {
+    if val.abs() >= 1e10 || (val != 0.0 && val.abs() < 1e-4) {
+        format!("{:.6e}", val)
+    } else {
+        format!("{}", val)
+    }
+}
+
 pub struct App {
     pub stack: Vec<f64>,
     pub input: String,
@@ -79,6 +87,14 @@ impl App {
                                 self.message = "Stack is empty".to_string();
                             }
                         },
+                        "pi" => {
+                            self.stack.push(std::f64::consts::PI);
+                            self.message = "Pushed π".to_string();
+                        },
+                        "e" => {
+                            self.stack.push(std::f64::consts::E);
+                            self.message = "Pushed e".to_string();
+                        },
                         _ => self.message = "Unknown command (type 'help' for list)".to_string(),
                     }
                 }
@@ -100,7 +116,7 @@ impl App {
         let a = self.stack.pop().unwrap();
         let result = op(a, b);
         self.stack.push(result);
-        let calc = format!("{} {} {} = {}", a, name, b, result);
+        let calc = format!("{} {} {} = {}", format_number(a), name, format_number(b), format_number(result));
         self.message = calc.clone();
         self.calc_history.push(calc);
         if self.calc_history.len() > 10 {
@@ -115,7 +131,7 @@ impl App {
         if let Some(a) = self.stack.pop() {
             let result = op(a);
             self.stack.push(result);
-            let calc = format!("{}({}) = {}", name, a, result);
+            let calc = format!("{}({}) = {}", name, format_number(a), format_number(result));
             self.message = calc.clone();
             self.calc_history.push(calc);
             if self.calc_history.len() > 10 {
@@ -139,7 +155,7 @@ impl App {
             self.message = "Division by zero".to_string();
         } else {
             self.stack.push(a / b);
-            let calc = format!("{} / {} = {}", a, b, a / b);
+            let calc = format!("{} / {} = {}", format_number(a), format_number(b), format_number(a / b));
             self.message = calc.clone();
             self.calc_history.push(calc);
             if self.calc_history.len() > 10 {
@@ -156,7 +172,7 @@ impl App {
             } else {
                 let result = 1.0 / a;
                 self.stack.push(result);
-                let calc = format!("1/{} = {}", a, result);
+                let calc = format!("1/{} = {}", format_number(a), format_number(result));
                 self.message = calc.clone();
                 self.calc_history.push(calc);
                 if self.calc_history.len() > 10 {
@@ -177,7 +193,7 @@ impl App {
                 let n = a as u64;
                 let result = (1..=n).product::<u64>() as f64;
                 self.stack.push(result);
-                let calc = format!("{}! = {}", n, result);
+                let calc = format!("{}! = {}", n, format_number(result));
                 self.message = calc.clone();
                 self.calc_history.push(calc);
                 if self.calc_history.len() > 10 {
@@ -237,7 +253,7 @@ impl App {
         } else {
             let result = x.powf(1.0 / y);
             self.stack.push(result);
-            let calc = format!("{} root {} = {}", y, x, result);
+            let calc = format!("{} root {} = {}", format_number(y), format_number(x), format_number(result));
             self.message = calc.clone();
             self.calc_history.push(calc);
             if self.calc_history.len() > 10 {
