@@ -81,7 +81,7 @@ impl App {
         self.input.clear();
     }
 
-    fn binary_op<F>(&mut self, op: F, name: &str)
+    pub fn binary_op<F>(&mut self, op: F, name: &str)
     where
         F: Fn(f64, f64) -> f64,
     {
@@ -101,7 +101,7 @@ impl App {
         }
     }
     
-    fn unary_op<F>(&mut self, op: F, name: &str)
+    pub fn unary_op<F>(&mut self, op: F, name: &str)
     where
         F: Fn(f64) -> f64,
     {
@@ -119,7 +119,7 @@ impl App {
         }
     }
     
-    fn divide(&mut self) {
+    pub fn divide(&mut self) {
         if self.stack.len() < 2 {
             self.message = "Need 2 numbers for division".to_string();
             return;
@@ -141,7 +141,7 @@ impl App {
         }
     }
     
-    fn reciprocal(&mut self) {
+    pub fn reciprocal(&mut self) {
         if let Some(a) = self.stack.pop() {
             if a == 0.0 {
                 self.stack.push(a);
@@ -161,7 +161,7 @@ impl App {
         }
     }
     
-    fn factorial(&mut self) {
+    pub fn factorial(&mut self) {
         if let Some(a) = self.stack.pop() {
             if a < 0.0 || a.fract() != 0.0 {
                 self.stack.push(a);
@@ -182,13 +182,27 @@ impl App {
         }
     }
     
-    fn swap(&mut self) {
-        if self.stack.len() < 2 {
-            self.message = "Need 2 numbers to swap".to_string();
-        } else {
-            let len = self.stack.len();
-            self.stack.swap(len - 1, len - 2);
-            self.message = "Swapped top 2 values".to_string();
+    pub fn execute_single_char(&mut self, c: char) {
+        if !self.input.is_empty() {
+            self.execute_command();
         }
+        
+        self.history.push(self.stack.clone());
+        
+        match c {
+            '+' => self.binary_op(|a, b| a + b, "+"),
+            '-' => self.binary_op(|a, b| a - b, "-"),
+            '*' => self.binary_op(|a, b| a * b, "*"),
+            '/' => self.divide(),
+            '^' => self.binary_op(|a, b| a.powf(b), "^"),
+            '%' => self.binary_op(|a, b| a % b, "%"),
+            '!' => self.factorial(),
+            _ => {}
+        }
+    }
+
+    pub fn clear(&mut self) {
+        self.stack.clear();
+        self.message = "Stack cleared".to_string();
     }
 }

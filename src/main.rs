@@ -16,143 +16,6 @@ use rpncalc::App;
 
 const VERSION: &str = git_version::git_version!(fallback = env!("CARGO_PKG_VERSION"));
 
-impl App {
-    fn execute_single_char(&mut self, c: char) {
-        if !self.input.is_empty() {
-            self.execute_command();
-        }
-        
-        self.history.push(self.stack.clone());
-        
-        match c {
-            '+' => self.binary_op(|a, b| a + b, "+"),
-            '-' => self.binary_op(|a, b| a - b, "-"),
-            '*' => self.binary_op(|a, b| a * b, "*"),
-            '/' => self.divide(),
-            '^' => self.binary_op(|a, b| a.powf(b), "^"),
-            '%' => self.binary_op(|a, b| a % b, "%"),
-            '!' => self.factorial(),
-            _ => {}
-        }
-    }
-
-    fn binary_op<F>(&mut self, op: F, name: &str)
-    where
-        F: Fn(f64, f64) -> f64,
-    {
-        if self.stack.len() < 2 {
-            self.message = format!("Need 2 numbers for {}", name);
-            return;
-        }
-        let b = self.stack.pop().unwrap();
-        let a = self.stack.pop().unwrap();
-        let result = op(a, b);
-        self.stack.push(result);
-        let calc = format!("{} {} {} = {}", a, name, b, result);
-        self.message = calc.clone();
-        self.calc_history.push(calc);
-        if self.calc_history.len() > 10 {
-            self.calc_history.remove(0);
-        }
-    }
-    
-    fn unary_op<F>(&mut self, op: F, name: &str)
-    where
-        F: Fn(f64) -> f64,
-    {
-        if let Some(a) = self.stack.pop() {
-            let result = op(a);
-            self.stack.push(result);
-            let calc = format!("{}({}) = {}", name, a, result);
-            self.message = calc.clone();
-            self.calc_history.push(calc);
-            if self.calc_history.len() > 10 {
-                self.calc_history.remove(0);
-            }
-        } else {
-            self.message = format!("Need 1 number for {}", name);
-        }
-    }
-    
-    fn divide(&mut self) {
-        if self.stack.len() < 2 {
-            self.message = "Need 2 numbers for division".to_string();
-            return;
-        }
-        let b = self.stack.pop().unwrap();
-        let a = self.stack.pop().unwrap();
-        if b == 0.0 {
-            self.stack.push(a);
-            self.stack.push(b);
-            self.message = "Division by zero".to_string();
-        } else {
-            self.stack.push(a / b);
-            let calc = format!("{} / {} = {}", a, b, a / b);
-            self.message = calc.clone();
-            self.calc_history.push(calc);
-            if self.calc_history.len() > 10 {
-                self.calc_history.remove(0);
-            }
-        }
-    }
-    
-    fn reciprocal(&mut self) {
-        if let Some(a) = self.stack.pop() {
-            if a == 0.0 {
-                self.stack.push(a);
-                self.message = "Cannot take reciprocal of zero".to_string();
-            } else {
-                let result = 1.0 / a;
-                self.stack.push(result);
-                let calc = format!("1/{} = {}", a, result);
-                self.message = calc.clone();
-                self.calc_history.push(calc);
-                if self.calc_history.len() > 10 {
-                    self.calc_history.remove(0);
-                }
-            }
-        } else {
-            self.message = "Need 1 number for reciprocal".to_string();
-        }
-    }
-    
-    fn factorial(&mut self) {
-        if let Some(a) = self.stack.pop() {
-            if a < 0.0 || a.fract() != 0.0 {
-                self.stack.push(a);
-                self.message = "Factorial needs non-negative integer".to_string();
-            } else {
-                let n = a as u64;
-                let result = (1..=n).product::<u64>() as f64;
-                self.stack.push(result);
-                let calc = format!("{}! = {}", n, result);
-                self.message = calc.clone();
-                self.calc_history.push(calc);
-                if self.calc_history.len() > 10 {
-                    self.calc_history.remove(0);
-                }
-            }
-        } else {
-            self.message = "Need 1 number for factorial".to_string();
-        }
-    }
-    
-    fn swap(&mut self) {
-        if self.stack.len() < 2 {
-            self.message = "Need 2 numbers to swap".to_string();
-        } else {
-            let len = self.stack.len();
-            self.stack.swap(len - 1, len - 2);
-            self.message = "Swapped top 2 values".to_string();
-        }
-    }
-    
-    fn clear(&mut self) {
-        self.stack.clear();
-        self.message = "Stack cleared".to_string();
-    }
-}
-
 fn main() -> Result<(), Box<dyn Error>> {
     enable_raw_mode()?;
     let mut stdout = io::stdout();
@@ -272,9 +135,10 @@ fn ui(f: &mut Frame, app: &App) {
     f.render_widget(history, main_chunks[1]);
 
     if app.show_help {
+        let version_str = format!("Version {}", VERSION);
         let help_text = vec![
             "RPN Calculator Help",
-            &format!("Version {}", VERSION),
+            &version_str,
             "",
             "Basic Operations:",
             "  +, -, *, /, ^, %",
