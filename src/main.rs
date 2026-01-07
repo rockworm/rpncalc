@@ -14,6 +14,8 @@ use ratatui::{
 use std::{error::Error, io};
 use rpncalc::App;
 
+const VERSION: &str = git_version::git_version!(fallback = env!("CARGO_PKG_VERSION"));
+
 impl App {
     fn execute_single_char(&mut self, c: char) {
         if !self.input.is_empty() {
@@ -229,7 +231,7 @@ fn ui(f: &mut Frame, app: &App) {
         ])
         .split(main_chunks[0]);
 
-    let title = Paragraph::new("RPN Calculator")
+    let title = Paragraph::new(format!("RPN Calculator {}", VERSION))
         .block(Block::default().borders(Borders::ALL))
         .style(Style::default().fg(Color::Cyan));
     f.render_widget(title, left_chunks[0]);
@@ -272,6 +274,7 @@ fn ui(f: &mut Frame, app: &App) {
     if app.show_help {
         let help_text = vec![
             "RPN Calculator Help",
+            &format!("Version {}", VERSION),
             "",
             "Basic Operations:",
             "  +, -, *, /, ^, %",
