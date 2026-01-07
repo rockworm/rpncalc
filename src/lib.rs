@@ -182,6 +182,16 @@ impl App {
         }
     }
     
+    pub fn swap(&mut self) {
+        if self.stack.len() < 2 {
+            self.message = "Need 2 numbers to swap".to_string();
+        } else {
+            let len = self.stack.len();
+            self.stack.swap(len - 1, len - 2);
+            self.message = "Swapped top 2 values".to_string();
+        }
+    }
+
     pub fn execute_single_char(&mut self, c: char) {
         if !self.input.is_empty() {
             self.execute_command();
