@@ -58,6 +58,13 @@ impl App {
                         "acos" => self.unary_op(|a| a.acos().to_degrees(), "acos"),
                         "atan" => self.unary_op(|a| a.atan().to_degrees(), "atan"),
                         "sqrt" => self.unary_op(|a| a.sqrt(), "sqrt"),
+                        "ln" => self.unary_op(|a| a.ln(), "ln"),
+                        "log" => self.unary_op(|a| a.log10(), "log"),
+                        "exp" => self.unary_op(|a| a.exp(), "exp"),
+                        "10x" => self.unary_op(|a| 10.0_f64.powf(a), "10x"),
+                        "abs" => self.unary_op(|a| a.abs(), "abs"),
+                        "cbrt" => self.unary_op(|a| a.cbrt(), "cbrt"),
+                        "root" => self.root(),
                         "inv" => self.reciprocal(),
                         "!" | "fact" => self.factorial(),
                         "swap" => self.swap(),
@@ -214,5 +221,28 @@ impl App {
     pub fn clear(&mut self) {
         self.stack.clear();
         self.message = "Stack cleared".to_string();
+    }
+
+    fn root(&mut self) {
+        if self.stack.len() < 2 {
+            self.message = "Need 2 numbers for root (y root x = x^(1/y))".to_string();
+            return;
+        }
+        let y = self.stack.pop().unwrap(); // root index
+        let x = self.stack.pop().unwrap(); // base
+        if y == 0.0 {
+            self.stack.push(x);
+            self.stack.push(y);
+            self.message = "Cannot take 0th root".to_string();
+        } else {
+            let result = x.powf(1.0 / y);
+            self.stack.push(result);
+            let calc = format!("{} root {} = {}", y, x, result);
+            self.message = calc.clone();
+            self.calc_history.push(calc);
+            if self.calc_history.len() > 10 {
+                self.calc_history.remove(0);
+            }
+        }
     }
 }

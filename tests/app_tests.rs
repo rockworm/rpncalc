@@ -229,3 +229,86 @@ fn test_unknown_command() {
     app.execute_command();
     assert!(app.message.contains("Unknown command"));
 }
+
+#[test]
+fn test_ln() {
+    let mut app = App::new();
+    app.stack = vec![std::f64::consts::E];
+    app.input = "ln".to_string();
+    app.execute_command();
+    assert!((app.stack[0] - 1.0).abs() < 1e-10);
+}
+
+#[test]
+fn test_log() {
+    let mut app = App::new();
+    app.stack = vec![100.0];
+    app.input = "log".to_string();
+    app.execute_command();
+    assert!((app.stack[0] - 2.0).abs() < 1e-10);
+}
+
+#[test]
+fn test_exp() {
+    let mut app = App::new();
+    app.stack = vec![1.0];
+    app.input = "exp".to_string();
+    app.execute_command();
+    assert!((app.stack[0] - std::f64::consts::E).abs() < 1e-10);
+}
+
+#[test]
+fn test_10x() {
+    let mut app = App::new();
+    app.stack = vec![2.0];
+    app.input = "10x".to_string();
+    app.execute_command();
+    assert_eq!(app.stack, vec![100.0]);
+}
+
+#[test]
+fn test_abs() {
+    let mut app = App::new();
+    app.stack = vec![-5.0];
+    app.input = "abs".to_string();
+    app.execute_command();
+    assert_eq!(app.stack, vec![5.0]);
+}
+
+#[test]
+fn test_cbrt() {
+    let mut app = App::new();
+    app.stack = vec![8.0];
+    app.input = "cbrt".to_string();
+    app.execute_command();
+    assert!((app.stack[0] - 2.0).abs() < 1e-10);
+}
+
+#[test]
+fn test_root() {
+    let mut app = App::new();
+    app.stack = vec![8.0, 3.0]; // 3rd root of 8
+    app.input = "root".to_string();
+    app.execute_command();
+    assert!((app.stack[0] - 2.0).abs() < 1e-10);
+}
+
+#[test]
+fn test_root_zero() {
+    let mut app = App::new();
+    app.stack = vec![8.0, 0.0];
+    app.input = "root".to_string();
+    app.execute_command();
+    assert_eq!(app.stack, vec![8.0, 0.0]);
+    assert!(app.message.contains("Cannot take 0th root"));
+}
+
+#[test]
+fn test_root_insufficient_stack() {
+    let mut app = App::new();
+    app.stack = vec![8.0];
+    app.input = "root".to_string();
+    app.execute_command();
+    assert_eq!(app.stack, vec![8.0]);
+    assert!(app.message.contains("Need 2 numbers"));
+}

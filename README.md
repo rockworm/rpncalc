@@ -5,7 +5,8 @@ A terminal-based Reverse Polish Notation calculator built with Rust and Ratatui.
 ## Features
 
 - **Arithmetic**: `+`, `-`, `*`, `/`, `^`, `%`
-- **Math Functions**: `sqrt`, `inv` (1/x), `!` (factorial)
+- **Logarithmic**: `ln`, `log`, `exp`, `10x`
+- **Math Functions**: `sqrt`, `cbrt`, `abs`, `root`, `inv` (1/x), `!` (factorial)
 - **Trigonometry**: `sin`, `cos`, `tan`, `asin`, `acos`, `atan`
 - **Stack Operations**: `swap`, `drop`, `clear`, `undo`
 - **Interactive TUI** with stack visualization and calculation history
