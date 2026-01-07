@@ -36,7 +36,12 @@ Stack: [27]
 ```bash
 git clone <repo-url>
 cd rpncalc
-cargo build --release
+./install.sh
+```
+
+Or for user-only installation:
+```bash
+cargo install --path .
 ```
 
 ## Testing
