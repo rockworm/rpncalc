@@ -79,13 +79,14 @@ jobs:
       env:
         RPNCALC_VERSION: ${{ needs.release.outputs.tag }}
     
-    - name: Rename binary
-      run: |
-        if [ "${{ matrix.os }}" = "windows-latest" ]; then
-          cp target/${{ matrix.target }}/release/rpncalc.exe ${{ matrix.name }}
-        else
-          cp target/${{ matrix.target }}/release/rpncalc ${{ matrix.name }}
-        fi
+    - name: Rename binary (Windows)
+      if: matrix.os == 'windows-latest'
+      run: copy target\${{ matrix.target }}\release\rpncalc.exe ${{ matrix.name }}
+      shell: cmd
+    
+    - name: Rename binary (Unix)
+      if: matrix.os != 'windows-latest'
+      run: cp target/${{ matrix.target }}/release/rpncalc ${{ matrix.name }}
     
     - name: Upload binary
       uses: softprops/action-gh-release@v1
