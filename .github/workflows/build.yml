@@ -1,0 +1,79 @@
+name: Build
+
+on:
+  release:
+    types: [created]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            name: rpncalc-linux-x64
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-musl
+            name: rpncalc-linux-x64-musl
+          - os: macos-latest
+            target: x86_64-apple-darwin
+            name: rpncalc-macos-x64
+          - os: macos-latest
+            target: aarch64-apple-darwin
+            name: rpncalc-macos-arm64
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            name: rpncalc-windows-x64.exe
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    
+    - uses: dtolnay/rust-toolchain@stable
+      with:
+        targets: ${{ matrix.target }}
+    
+    - name: Install musl tools
+      if: matrix.target == 'x86_64-unknown-linux-musl'
+      run: sudo apt-get install -y musl-tools
+    
+    - name: Build
+      run: cargo build --release --target ${{ matrix.target }}
+    
+    - name: Upload binary
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_path: target/${{ matrix.target }}/release/rpncalc${{ matrix.os == 'windows-latest' && '.exe' || '' }}
+        asset_name: ${{ matrix.name }}
+        asset_content_type: application/octet-stream
+
+  build-freebsd:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    
+    - name: Build on FreeBSD
+      uses: vmactions/freebsd-vm@v1
+      with:
+        usesh: true
+        run: |
+          pkg install -y rust
+          cargo build --release
+          cp target/release/rpncalc rpncalc-freebsd-x64
+    
+    - name: Upload FreeBSD binary
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_path: rpncalc-freebsd-x64
+        asset_name: rpncalc-freebsd-x64
+        asset_content_type: application/octet-stream
