@@ -76,6 +76,8 @@ jobs:
     
     - name: Build
       run: cargo build --release --target ${{ matrix.target }}
+      env:
+        RPNCALC_VERSION: ${{ needs.release.outputs.tag }}
     
     - name: Upload binary
       uses: softprops/action-gh-release@v1
@@ -100,7 +102,8 @@ jobs:
         usesh: true
         run: |
           pkg install -y rust
-          cargo build --release
+          git describe --tags --always
+          RPNCALC_VERSION=${{ needs.release.outputs.tag }} cargo build --release
           cp target/release/rpncalc rpncalc-freebsd-x64
     
     - name: Upload FreeBSD binary

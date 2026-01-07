@@ -1,5 +1,5 @@
 use crossterm::{
-    event::{self, DisableMouseCapture, EnableMouseCapture, Event, KeyCode},
+    event::{self, DisableMouseCapture, EnableMouseCapture, Event, KeyCode, KeyEventKind},
     execute,
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
@@ -14,7 +14,10 @@ use ratatui::{
 use std::{error::Error, io};
 use rpncalc::App;
 
-const VERSION: &str = git_version::git_version!(fallback = env!("CARGO_PKG_VERSION"));
+const VERSION: &str = match option_env!("RPNCALC_VERSION") {
+    Some(v) => v,
+    None => git_version::git_version!(args = ["--tags", "--always", "--dirty=-modified"], fallback = env!("CARGO_PKG_VERSION"))
+};
 
 fn main() -> Result<(), Box<dyn Error>> {
     enable_raw_mode()?;
@@ -46,6 +49,10 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> io::Result<
         terminal.draw(|f| ui(f, app))?;
 
         if let Event::Key(key) = event::read()? {
+            // On Windows, filter out key release events to prevent double input
+            if key.kind == KeyEventKind::Release {
+                continue;
+            }
             if app.show_help {
                 app.show_help = false;
                 app.message = "Help closed".to_string();
