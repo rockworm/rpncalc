@@ -84,6 +84,7 @@ jobs:
       with:
         tag_name: ${{ needs.release.outputs.tag }}
         files: target/${{ matrix.target }}/release/rpncalc${{ matrix.os == 'windows-latest' && '.exe' || '' }}
+        asset_name: ${{ matrix.name }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
